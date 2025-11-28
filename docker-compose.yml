@@ -32,5 +32,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  alert_engine:
+    build: .
+    command: python -m app.services.alert_consumer
+    depends_on:
+      - kafka
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg://admin:password@db:5432/hospital_db
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_TOPIC_VITALS: vitals_stream
+      KAFKA_TOPIC_ALERTS: alerts
+
 volumes:
   postgres_data:

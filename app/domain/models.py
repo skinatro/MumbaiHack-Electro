@@ -88,3 +88,17 @@ class Observation(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     encounter = relationship("Encounter", back_populates="observations")
+
+class Alert(Base):
+    __tablename__ = "alerts"
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    encounter_id = Column(Integer, ForeignKey("encounters.id"))
+    timestamp = Column(DateTime(timezone=True))
+    type = Column(String) # CRITICAL, WARNING
+    severity = Column(String) # high, medium, low
+    details = Column(String)
+    resolved = Column(Boolean, default=False)
+    
+    patient = relationship("Patient")
+    encounter = relationship("Encounter")
