@@ -296,6 +296,24 @@ The system includes an intelligent agent for handling patient admissions automat
 3. **User Creation**: Automatically creates a User and Patient profile if they don't exist.
 4. **Encounter**: Creates an active encounter assigned to a doctor.
 
+## Auto-Discharge System
+
+The system monitors patient stability and automatically discharges them when criteria are met, generating a comprehensive discharge plan.
+
+**Endpoints**:
+- `POST /discharge/auto/run`: Trigger auto-discharge evaluation for all active encounters.
+- `PATCH /encounters/<id>/discharge`: Manually discharge an encounter (Doctor/Admin).
+- `GET /encounters/<id>/discharge_plan`: Fetch the generated discharge plan.
+- `GET /patients/me/post_discharge`: Fetch the logged-in patient's latest discharge plan.
+
+**Stability Rules**:
+- **Time**: Admitted for at least 2 days (configurable).
+- **Alerts**: No high severity alerts in the last 12 hours.
+- **Vitals**: Last 24 hours of vitals must be within normal ranges (HR 60-110, SpO2 >= 94, BP <= 150/95, Temp <= 37.8).
+
+**Discharge Plan (LLM-Generated)**:
+Includes a summary, home care instructions, recommended medications, and follow-up schedule.
+
 ## Project Structure
 
 - `app/api`: API route handlers (Blueprints).

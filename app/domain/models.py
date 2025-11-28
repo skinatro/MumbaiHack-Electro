@@ -53,6 +53,7 @@ class Encounter(Base):
     doctor_id = Column(Integer, ForeignKey("doctors.id"))
     room_id = Column(Integer, ForeignKey("rooms.id"))
     status = Column(String) # active, discharged
+    auto_discharge_blocked = Column(Boolean, default=False)
     admitted_at = Column(DateTime(timezone=True), server_default=func.now())
     discharged_at = Column(DateTime(timezone=True), nullable=True)
     
@@ -61,6 +62,7 @@ class Encounter(Base):
     room = relationship("Room", back_populates="encounters")
     vitals = relationship("Vitals", back_populates="encounter")
     observations = relationship("Observation", back_populates="encounter")
+    discharge_plan = relationship("DischargePlan", back_populates="encounter", uselist=False)
 
 class Vitals(Base):
     __tablename__ = "vitals"
@@ -104,3 +106,29 @@ class Alert(Base):
     
     patient = relationship("Patient")
     encounter = relationship("Encounter")
+
+class DischargePlan(Base):
+    __tablename__ = "discharge_plans"
+    id = Column(Integer, primary_key=True, index=True)
+    encounter_id = Column(Integer, ForeignKey("encounters.id"), unique=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    summary = Column(Text)
+    home_care_instructions = Column(Text) # Storing as JSON string or Text
+    recommended_meds = Column(Text) # Storing as JSON string or Text
+    followup_days = Column(Integer)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    generated_by = Column(String) # e.g. "llm"
+    
+    encounter = relationship("Encounter", back_populates="discharge_plan")
+    patient = relationship("Patient")
+
+class FollowupAppointment(Base):
+    __tablename__ = "followup_appointments"
+    id = Column(Integer, primary_key=True, index=True)
+    encounter_id = Column(Integer, ForeignKey("encounters.id"))
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    scheduled_for = Column(DateTime(timezone=True))
+    status = Column(String, default="pending") # pending, completed, cancelled
+    
+    encounter = relationship("Encounter")
+    patient = relationship("Patient")

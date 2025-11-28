@@ -50,6 +50,7 @@ def create_app():
     app.register_blueprint(patients_bp)
     app.register_blueprint(alerts_bp)
     app.register_blueprint(admissions_bp)
+    app.register_blueprint(discharge_bp)
     
     @app.route('/health')
     def health():

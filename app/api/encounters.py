@@ -99,6 +99,57 @@ def get_encounter_overview(id):
     
     return api_response(data=response.model_dump())
 
+@encounters_bp.route('/<int:id>/discharge', methods=['PATCH'])
+@login_required(roles=['admin', 'doctor'])
+def discharge_encounter(id):
+    """
+    Manually discharge an encounter.
+    Optionally generate discharge plan if requested.
+    """
+    db = next(get_db())
+    try:
+        # Check if active
+        encounter = db.query(Encounter).filter(Encounter.id == id).first()
+        if not encounter:
+             return api_response(error="Encounter not found", status_code=404)
+             
+        if encounter.status != "active":
+             return api_response(error="Encounter is not active", status_code=400)
+
+        # Discharge
+        DischargeService.discharge_encounter(id, db)
+        
+        # Generate plan if requested? 
+        # Requirement says: "Optionally from PATCH ... when a doctor manually discharges and requests plan generation."
+        # Let's check query param or body.
+        data = request.get_json() or {}
+        if data.get("generate_plan", True): # Default to True for convenience
+             DischargeService.generate_discharge_plan(id, db)
+             
+        return api_response(message="Encounter discharged successfully")
+    except Exception as e:
+        return api_response(error=str(e), status_code=500)
+
+@encounters_bp.route('/<int:id>/hold_auto_discharge', methods=['PATCH'])
+@login_required(roles=['admin', 'doctor'])
+def hold_auto_discharge(id):
+    """
+    Block or unblock auto-discharge for an encounter.
+    Body: { "hold": true/false }
+    """
+    db = next(get_db())
+    data = request.get_json()
+    hold = data.get("hold", True)
+    
+    encounter = db.query(Encounter).filter(Encounter.id == id).first()
+    if not encounter:
+        return api_response(error="Encounter not found", status_code=404)
+        
+    encounter.auto_discharge_blocked = hold
+    db.commit()
+    
+    return api_response(message=f"Auto-discharge hold set to {hold}")
+
 @encounters_bp.route('/<int:id>/alerts', methods=['GET'])
 @login_required(roles=['doctor', 'nurse', 'admin'])
 def get_encounter_alerts(id):
