@@ -14,7 +14,8 @@ class KafkaClient:
             try:
                 cls._producer = KafkaProducer(
                     bootstrap_servers=Config.KAFKA_BOOTSTRAP_SERVERS,
-                    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+                    value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                    api_version=(2, 0, 0) # Fix for UnrecognizedBrokerVersion
                 )
                 logger.info("Kafka producer initialized")
             except Exception as e:

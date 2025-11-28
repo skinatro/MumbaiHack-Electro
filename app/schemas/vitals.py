@@ -7,11 +7,12 @@ class VitalsIngestRequest(BaseModel):
     encounter_id: int = Field(..., gt=0)
     timestamp: datetime
     hr_bpm: Optional[int] = Field(None, ge=0, le=300)
-    spo2_pct: Optional[float] = Field(None, ge=0, le=100)
+    spo2_pct: Optional[int] = Field(None, ge=0, le=100)
     temp_c: Optional[float] = Field(None, ge=20, le=45)
     bp_systolic: Optional[int] = Field(None, ge=0, le=300)
     bp_diastolic: Optional[int] = Field(None, ge=0, le=300)
     resp_rate_bpm: Optional[int] = Field(None, ge=0, le=100)
+    device_flags: Optional[list[str]] = None
 
 class VitalsResponse(BaseModel):
     id: int

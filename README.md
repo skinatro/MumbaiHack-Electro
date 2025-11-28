@@ -218,6 +218,39 @@ The Alert Engine runs synchronously within the Vitals Ingestion API. When vitals
 }
 ```
 
+## Vitals Simulator
+
+A standalone script is provided to simulate a medical device sending vitals to the backend. It generates realistic data and occasionally injects anomalies to trigger alerts.
+
+**Configuration**
+Set the following in your `.env` file (or use defaults):
+```bash
+BACKEND_URL=http://localhost:5001
+SIM_DOCTOR_USERNAME=admin
+SIM_DOCTOR_PASSWORD=password
+SIM_PATIENT_ID=1      # ID of an existing patient
+SIM_ENCOUNTER_ID=2    # ID of an active encounter for that patient
+```
+
+**Running the Simulator**
+```bash
+python scripts/vitals_simulator.py
+```
+
+**Output Example**
+```text
+Logging in to http://localhost:5001/auth/login as admin...
+Login successful.
+Starting simulation for Patient 1, Encounter 1
+Press Ctrl+C to stop.
+[10:05:00] Sent: HR=85, SpO2=98, Temp=37.1 -> Status: 201
+[10:05:08] Sent: HR=92, SpO2=97, Temp=36.9 -> Status: 201
+!!! Injecting ANOMALY: tachycardia !!!
+[10:05:16] Sent: HR=155, SpO2=96, Temp=37.0 -> Status: 201
+   >>> ALERTS TRIGGERED: ['tachycardia']
+```
+This is useful for demonstrating real-time monitoring and alert generation on the frontend.
+
 ## Project Structure
 
 - `app/api`: API route handlers (Blueprints).

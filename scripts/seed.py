@@ -29,6 +29,29 @@ def seed_data():
         ]
         db.add_all(rooms)
         db.commit()
+
+    # Create Patient
+    if not UserRepository.get_by_username(db, 'patient_zero'):
+        print("Creating patient user...")
+        user = UserRepository.create_user(db, 'patient_zero', 'password', 'patient')
+        UserRepository.create_patient(db, user.id, '1990-01-01', 'Male')
+
+    # Create Encounter
+    from app.domain.models import Encounter, Patient, Doctor
+    patient = db.query(Patient).first()
+    doctor = db.query(Doctor).first()
+    room = db.query(Room).first()
+    
+    if patient and doctor and room and db.query(Encounter).count() == 0:
+        print("Creating encounter...")
+        encounter = Encounter(
+            patient_id=patient.id,
+            doctor_id=doctor.id,
+            room_id=room.id,
+            status='active'
+        )
+        db.add(encounter)
+        db.commit()
         
     print("Seeding complete.")
     db.close()
