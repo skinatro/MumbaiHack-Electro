@@ -7,3 +7,5 @@ pydantic>=2.9
 python-dotenv==1.0.0
 werkzeug==3.0.1
 requests
+langchain
+langchain-ollama

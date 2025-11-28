@@ -58,6 +58,24 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KAFKA_TOPIC_VITALS: vitals_stream
       KAFKA_TOPIC_ALERTS: alerts
+  
+  copilot:
+    build: .
+    container_name: mumbaihack-electro-copilot
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/mumbaihack_electro
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC_ALERTS=alerts
+    command: python scripts/run_copilot.py
+    depends_on:
+      - kafka
+      - db
+    networks:
+      - electrohack-network
 
 volumes:
   postgres_data:
+
+networks:
+  electrohack-network:
+    driver: bridge

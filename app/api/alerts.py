@@ -11,7 +11,7 @@ alerts_bp = Blueprint('alerts', __name__, url_prefix='/alerts')
 @login_required(roles=['doctor', 'admin'])
 def resolve_alert(id):
     db = next(get_db())
-    alert = db.query(Alert).get(id)
+    alert = db.query(Alert).filter(Alert.id == id).first()
     
     if not alert:
         return api_response(error='Alert not found', status_code=404)
@@ -20,8 +20,28 @@ def resolve_alert(id):
     alert.resolved_at = datetime.utcnow()
     db.commit()
     
+    return api_response(message="Alert resolved")
+
+@alerts_bp.route('/<int:id>/explanation', methods=['GET'])
+@login_required(roles=['doctor', 'admin'])
+def get_alert_explanation(id):
+    """
+    Fetch the LLM-generated explanation for an alert.
+    """
+    db = next(get_db())
+    alert = db.query(Alert).filter(Alert.id == id).first()
+    if not alert:
+        return api_response(error="Alert not found", status_code=404)
+        
+    explanation = alert.explanation
+    if not explanation:
+        return api_response(error="Explanation not available yet", status_code=404)
+        
     return api_response(data={
-        'id': alert.id, 
-        'status': 'resolved',
-        'resolved_at': alert.resolved_at.isoformat()
+        "alert_id": explanation.alert_id,
+        "summary": explanation.summary,
+        "risk_level": explanation.risk_level,
+        "suggested_checks": json.loads(explanation.suggested_checks) if explanation.suggested_checks else [],
+        "suggested_actions": json.loads(explanation.suggested_actions) if explanation.suggested_actions else [],
+        "created_at": explanation.created_at
     })

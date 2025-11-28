@@ -1,9 +1,8 @@
 from flask import Blueprint, request
 from app.core.database import get_db
 from app.services.discharge_service import DischargeService
-from app.domain.models import Encounter, DischargePlan
-from app.core.utils import api_response
-from app.core.security import login_required, get_current_user
+from app.core.security import login_required
+from app.domain.models import Encounter, DischargePlan, User
 
 discharge_bp = Blueprint('discharge', __name__)
 
@@ -56,11 +55,14 @@ def get_discharge_plan(encounter_id):
         return api_response(error="Discharge plan not found", status_code=404)
         
     # Check ownership if patient
-    current_user = get_current_user()
-    if current_user.role == 'patient':
+    # Check ownership if patient
+    current_user_id = request.current_user['user_id']
+    current_user_role = request.current_user['role']
+    
+    if current_user_role == 'patient':
         # Ensure patient owns this encounter
         encounter = db.query(Encounter).filter(Encounter.id == encounter_id).first()
-        if not encounter or encounter.patient.user_id != current_user.id:
+        if not encounter or encounter.patient.user_id != current_user_id:
              return api_response(error="Unauthorized", status_code=403)
 
     return api_response(data={
@@ -83,10 +85,11 @@ def get_my_post_discharge():
     Fetch the most recent discharge plan for the logged-in patient.
     """
     db = next(get_db())
-    current_user = get_current_user()
+    current_user_id = request.current_user['user_id']
+    current_user = db.query(User).filter(User.id == current_user_id).first()
     
     # Find patient profile
-    if not current_user.patient_profile:
+    if not current_user or not current_user.patient_profile:
         return api_response(error="Patient profile not found", status_code=404)
         
     # Find latest discharge plan

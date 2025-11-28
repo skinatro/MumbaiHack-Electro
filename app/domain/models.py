@@ -132,3 +132,18 @@ class FollowupAppointment(Base):
     
     encounter = relationship("Encounter")
     patient = relationship("Patient")
+
+class AlertExplanation(Base):
+    __tablename__ = "alert_explanations"
+    id = Column(Integer, primary_key=True, index=True)
+    alert_id = Column(Integer, ForeignKey("alerts.id"), unique=True)
+    summary = Column(Text)
+    risk_level = Column(String) # e.g. "High", "Moderate", "Low"
+    suggested_checks = Column(Text) # Storing as JSON string
+    suggested_actions = Column(Text) # Storing as JSON string
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    alert = relationship("Alert", back_populates="explanation")
+
+# Add relationship to Alert model
+Alert.explanation = relationship("AlertExplanation", back_populates="alert", uselist=False)

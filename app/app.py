@@ -7,6 +7,9 @@ from app.api.observations import observations_bp
 from app.api.doctors import doctors_bp
 from app.api.patients import patients_bp
 from app.api.alerts import alerts_bp
+from app.api.admissions import admissions_bp
+from app.api.discharge import discharge_bp
+from app.api.llm_health import llm_health_bp
 import logging
 import time
 from werkzeug.exceptions import HTTPException
@@ -51,6 +54,7 @@ def create_app():
     app.register_blueprint(alerts_bp)
     app.register_blueprint(admissions_bp)
     app.register_blueprint(discharge_bp)
+    app.register_blueprint(llm_health_bp)
     
     @app.route('/health')
     def health():
@@ -61,4 +65,4 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

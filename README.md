@@ -314,6 +314,31 @@ The system monitors patient stability and automatically discharges them when cri
 **Discharge Plan (LLM-Generated)**:
 Includes a summary, home care instructions, recommended medications, and follow-up schedule.
 
+## LLM Doctor Copilot
+
+A dedicated service that analyzes alerts and provides structured, AI-generated explanations to assist doctors.
+
+**Features**:
+- Listens to Kafka `alerts` topic.
+- Fetches patient context and recent vitals.
+- Generates summary, risk level, suggested checks, and actions using LLM.
+- Exposes explanation via API.
+
+**Endpoint**:
+- `GET /alerts/<id>/explanation`: Fetch the copilot's analysis for a specific alert.
+
+## LLM / Ollama Healthcheck
+
+Verify the LangChain + Ollama integration.
+
+**Environment Variables**:
+- `OLLAMA_BASE_URL`: URL of the Ollama instance (default: `http://localhost:11434`).
+- `OLLAMA_MODEL`: Model to use (default: `llama3`).
+
+**Endpoints**:
+- `GET /llm/health`: Checks connectivity to Ollama. Returns `200` and `"ok": true` if successful.
+- `GET /llm/copilot/smoke_test`: Runs a smoke test of the doctor copilot pipeline using a fake context.
+
 ## Project Structure
 
 - `app/api`: API route handlers (Blueprints).
