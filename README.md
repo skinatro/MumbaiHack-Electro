@@ -249,7 +249,52 @@ Press Ctrl+C to stop.
 [10:05:16] Sent: HR=155, SpO2=96, Temp=37.0 -> Status: 201
    >>> ALERTS TRIGGERED: ['tachycardia']
 ```
+   >>> ALERTS TRIGGERED: ['tachycardia']
+```
 This is useful for demonstrating real-time monitoring and alert generation on the frontend.
+
+## Auto-Admission Agent
+
+The system includes an intelligent agent for handling patient admissions automatically.
+
+**Endpoint**: `POST /admissions/auto`
+
+**Request Example**:
+```json
+{
+  "name": "John Doe",
+  "age": 45,
+  "gender": "Male",
+  "symptoms": ["severe chest pain", "sweating"],
+  "complaint_description": "Patient collapsed at home",
+  "severity_hint": "high"
+}
+```
+
+**Response Example**:
+```json
+{
+  "status": "success",
+  "data": {
+    "encounter_id": 10,
+    "patient_id": 5,
+    "room_id": 2,
+    "room_number": "102",
+    "department": "ICU",
+    "status": "active",
+    "assigned_doctor_id": 1,
+    "triage_decision": "ICU",
+    "notes": "Admitted to ICU (Triage: ICU). Reason: severe chest pain"
+  },
+  "error": null
+}
+```
+
+**Logic**:
+1. **Triage**: Keywords like "chest pain", "unconscious" -> ICU. Mild symptoms -> General.
+2. **Room Allocation**: Finds first free room in the triaged department. Falls back to General if ICU is full.
+3. **User Creation**: Automatically creates a User and Patient profile if they don't exist.
+4. **Encounter**: Creates an active encounter assigned to a doctor.
 
 ## Project Structure
 
