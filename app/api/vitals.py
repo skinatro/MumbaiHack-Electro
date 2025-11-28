@@ -11,6 +11,8 @@ from pydantic import ValidationError
 
 vitals_bp = Blueprint('vitals', __name__, url_prefix='/vitals')
 
+from app.services.alert_service import AlertService
+
 @vitals_bp.route('', methods=['POST'])
 # @login_required() # Devices might authenticate differently
 def ingest_vitals():
@@ -29,14 +31,15 @@ def ingest_vitals():
     vitals_data = req.model_dump()
     vitals = VitalsRepository.create_vitals(db, vitals_data)
     
-    # Publish to Kafka
+    # Publish to Kafka (Vitals Stream)
     vitals_payload = vitals_data.copy()
     vitals_payload['timestamp'] = vitals_payload['timestamp'].isoformat()
     KafkaClient.send_message(Config.KAFKA_TOPIC_VITALS, vitals_payload)
     
-    # Rule Engine is now handled by the Alert Engine consumer
+    # Synchronous Alert Evaluation
+    alerts_triggered = AlertService.evaluate_vitals(db, vitals)
     
-    return api_response(data={'id': vitals.id, 'status': 'received'}, status_code=201)
+    return api_response(data={'id': vitals.id, 'status': 'received', 'alerts': alerts_triggered}, status_code=201)
 
 @vitals_bp.route('', methods=['GET'])
 @login_required()

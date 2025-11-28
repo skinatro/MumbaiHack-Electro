@@ -4,6 +4,7 @@ from app.repositories.encounter_repo import EncounterRepository
 from app.core.security import login_required
 from app.schemas.frontend import DoctorPatientListResponse, ActiveEncounter, PatientBasicInfo, RoomInfo
 from app.core.utils import api_response
+from app.domain.models import Doctor, Alert, Encounter
 
 doctors_bp = Blueprint('doctors', __name__, url_prefix='/doctors')
 
@@ -49,3 +50,33 @@ def get_doctor_patients(id):
         ))
         
     return api_response(data=DoctorPatientListResponse(encounters=response_data).model_dump())
+
+@doctors_bp.route('/me/alerts/recent', methods=['GET'])
+@login_required(roles=['doctor'])
+def get_recent_alerts():
+    current_user = request.current_user
+    db = next(get_db())
+    
+    # Get doctor profile
+    doctor = db.query(Doctor).filter(Doctor.user_id == current_user['user_id']).first()
+    if not doctor:
+        return api_response(error="Doctor profile not found", status_code=404)
+        
+    # Get recent unresolved alerts for this doctor's encounters
+    # Join Alert -> Encounter -> Doctor
+    
+    alerts = db.query(Alert).join(Encounter).filter(
+        Encounter.doctor_id == doctor.id,
+        Encounter.status == 'active',
+        Alert.resolved == False
+    ).order_by(Alert.created_at.desc()).limit(50).all()
+    
+    return api_response(data=[{
+        'id': a.id,
+        'patient_id': a.patient_id,
+        'encounter_id': a.encounter_id,
+        'type': a.type,
+        'severity': a.severity,
+        'message': a.message,
+        'created_at': a.created_at.isoformat() if a.created_at else None
+    } for a in alerts])

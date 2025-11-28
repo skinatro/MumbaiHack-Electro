@@ -3,6 +3,7 @@ from app.core.database import get_db
 from app.domain.models import Alert
 from app.core.security import login_required
 from app.core.utils import api_response
+from datetime import datetime
 
 alerts_bp = Blueprint('alerts', __name__, url_prefix='/alerts')
 
@@ -16,6 +17,11 @@ def resolve_alert(id):
         return api_response(error='Alert not found', status_code=404)
         
     alert.resolved = True
+    alert.resolved_at = datetime.utcnow()
     db.commit()
     
-    return api_response(data={'id': alert.id, 'status': 'resolved'})
+    return api_response(data={
+        'id': alert.id, 
+        'status': 'resolved',
+        'resolved_at': alert.resolved_at.isoformat()
+    })

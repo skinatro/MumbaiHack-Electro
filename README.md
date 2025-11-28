@@ -175,7 +175,13 @@ curl -X GET http://localhost:5001/patients/<patient_id>/vitals/recent?limit=10 \
   -H "Authorization: Bearer <token>"
 ```
 
-### Alert Management
+### Alerts & Monitoring API
+
+**Rules**
+- **Tachycardia**: HR > 130 bpm
+- **Hypoxia**: SpO₂ < 90%
+- **Hypertension**: Systolic > 180 OR Diastolic > 110
+- **Fever**: Temp > 38.5°C
 
 **List Encounter Alerts**
 ```bash
@@ -189,18 +195,26 @@ curl -X PATCH http://localhost:5001/alerts/<alert_id>/resolve \
   -H "Authorization: Bearer <token>"
 ```
 
+**Get Recent Doctor Alerts**
+```bash
+curl -X GET http://localhost:5001/doctors/me/alerts/recent \
+  -H "Authorization: Bearer <token>"
+```
+
 ## Alert Engine
 
-The Alert Engine runs as a separate service (`alert_engine`) in Docker Compose. It consumes vitals from Kafka (`vitals_stream`), evaluates rules, and publishes alerts to Kafka (`alerts`) and PostgreSQL.
+The Alert Engine runs synchronously within the Vitals Ingestion API. When vitals are posted, they are evaluated against the rules, and alerts are created immediately if thresholds are crossed. Alerts are also published to Kafka (`alerts` topic).
 
 **Example Alert JSON (Kafka Event)**
 ```json
 {
-  "type": "TACHYCARDIA",
-  "severity": "high",
-  "message": "High Heart Rate detected: 140 BPM",
+  "alert_id": 10,
   "patient_id": 1,
-  "timestamp": "2023-10-27T10:05:00"
+  "encounter_id": 2,
+  "type": "tachycardia",
+  "severity": "high",
+  "message": "HR 145 bpm (> 130): Tachycardia suspected",
+  "created_at": "2023-10-27T10:05:00"
 }
 ```
 

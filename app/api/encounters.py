@@ -112,9 +112,12 @@ def get_encounter_alerts(id):
     
     return api_response(data=[{
         'id': a.id,
-        'timestamp': a.timestamp.isoformat(),
+        'patient_id': a.patient_id,
+        'encounter_id': a.encounter_id,
         'type': a.type,
         'severity': a.severity,
-        'details': a.details,
-        'resolved': a.resolved
+        'message': a.message,
+        'created_at': a.created_at.isoformat() if a.created_at else None,
+        'resolved': a.resolved,
+        'resolved_at': a.resolved_at.isoformat() if a.resolved_at else None
     } for a in alerts])

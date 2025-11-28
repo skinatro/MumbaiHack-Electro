@@ -94,11 +94,13 @@ class Alert(Base):
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.id"))
     encounter_id = Column(Integer, ForeignKey("encounters.id"))
-    timestamp = Column(DateTime(timezone=True))
-    type = Column(String) # CRITICAL, WARNING
+    timestamp = Column(DateTime(timezone=True)) # This is the time of the event (vitals)
+    created_at = Column(DateTime(timezone=True), server_default=func.now()) # This is when alert was created
+    type = Column(String) # tachycardia, hypoxia, hypertension, fever
     severity = Column(String) # high, medium, low
-    details = Column(String)
+    message = Column(String)
     resolved = Column(Boolean, default=False)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
     
     patient = relationship("Patient")
     encounter = relationship("Encounter")
