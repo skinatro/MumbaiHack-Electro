@@ -29,7 +29,7 @@ class VitalsPoint(BaseModel):
     temp_c: Optional[float]
     bp_systolic: Optional[int]
     bp_diastolic: Optional[int]
-    resp_rate: Optional[int]
+    resp_rate_bpm: Optional[int]
 
 class ObservationInfo(BaseModel):
     id: int

@@ -73,7 +73,7 @@ def get_patient_vitals(id):
             temp_c=v.temp_c,
             bp_systolic=v.bp_systolic,
             bp_diastolic=v.bp_diastolic,
-            resp_rate=v.resp_rate
+            resp_rate_bpm=v.resp_rate_bpm
         ) for v in recent_vitals
     ]
     

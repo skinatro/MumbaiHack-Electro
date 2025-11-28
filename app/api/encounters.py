@@ -66,7 +66,7 @@ def get_encounter_overview(id):
             temp_c=latest_vitals.temp_c,
             bp_systolic=latest_vitals.bp_systolic,
             bp_diastolic=latest_vitals.bp_diastolic,
-            resp_rate=latest_vitals.resp_rate
+            resp_rate_bpm=latest_vitals.resp_rate_bpm
         )
         
     # Get last observation
