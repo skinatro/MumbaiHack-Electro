@@ -48,7 +48,33 @@ def get_vitals():
     encounter_id = request.args.get('encounter_id')
     last_minutes = request.args.get('last_minutes')
     
+    current_user = request.current_user
+    
+    # RBAC: Patient can only see their own vitals
+    if current_user['role'] == 'patient':
+        # If patient_id is provided, it must match
+        if patient_id and int(patient_id) != current_user['user_id']: # Wait, patient_id is Patient ID, not User ID.
+             # We need to resolve Patient ID from User ID.
+             # This is tricky without querying DB.
+             # Let's assume we can get patient profile from DB.
+             pass # Logic below
+             
     db = next(get_db())
+    
+    # Resolve Patient ID for RBAC
+    if current_user['role'] == 'patient':
+        from app.domain.models import Patient
+        patient_profile = db.query(Patient).filter(Patient.user_id == current_user['user_id']).first()
+        if not patient_profile:
+            return api_response(error="Patient profile not found", status_code=404)
+            
+        # Enforce filtering by this patient
+        if patient_id and int(patient_id) != patient_profile.id:
+            return api_response(error="Unauthorized", status_code=403)
+            
+        # If no patient_id provided, force it
+        patient_id = patient_profile.id
+        
     vitals_list = VitalsRepository.get_vitals(db, patient_id, encounter_id, last_minutes)
     
     return api_response(data=[VitalsResponse.model_validate(v).model_dump() for v in vitals_list])

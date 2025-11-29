@@ -22,6 +22,8 @@ class LLMService:
                 template="""You are a medical assistant. Generate a discharge plan for a patient based on the following context:
                 {context}
                 
+                IMPORTANT: Your output is for informational purposes only and does not constitute medical advice or a prescription. All suggestions must be reviewed by a qualified medical professional.
+                
                 Return the output as a JSON object with the following keys:
                 - discharge_summary: A short plain-language summary.
                 - home_care_instructions: A list of instructions.
@@ -61,6 +63,8 @@ class LLMService:
             prompt = PromptTemplate(
                 template="""You are a medical assistant. Analyze the following alert and patient context:
                 {context}
+                
+                IMPORTANT: Your output is for informational purposes only and does not constitute medical advice. All suggestions must be reviewed by a qualified medical professional.
                 
                 Return the output as a JSON object with the following keys:
                 - summary: A short summary of the situation.

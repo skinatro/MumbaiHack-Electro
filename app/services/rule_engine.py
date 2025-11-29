@@ -51,6 +51,71 @@ class RuleEngine:
                 'timestamp': vitals_data['timestamp']
             })
 
+        # Rule 5: Bradycardia (HR < 50)
+        if vitals_data.get('hr_bpm') and vitals_data['hr_bpm'] < 50:
+            alerts.append({
+                'type': 'BRADYCARDIA',
+                'severity': 'high',
+                'message': f"Bradycardia detected: {vitals_data['hr_bpm']} BPM",
+                'patient_id': vitals_data['patient_id'],
+                'timestamp': vitals_data['timestamp']
+            })
+
+        # Rule 6: Hypotension (Sys < 90)
+        if sys and sys < 90:
+            alerts.append({
+                'type': 'HYPOTENSION',
+                'severity': 'high',
+                'message': f"Hypotension detected: {sys}/{dia} mmHg",
+                'patient_id': vitals_data['patient_id'],
+                'timestamp': vitals_data['timestamp']
+            })
+
+        # Rule 7: Respiratory Rate Abnormalities
+        resp = vitals_data.get('resp_rate_bpm')
+        if resp:
+            if resp > 24:
+                alerts.append({
+                    'type': 'TACHYPNEA',
+                    'severity': 'medium',
+                    'message': f"Rapid breathing detected: {resp} bpm",
+                    'patient_id': vitals_data['patient_id'],
+                    'timestamp': vitals_data['timestamp']
+                })
+            elif resp < 8:
+                alerts.append({
+                    'type': 'BRADYPNEA',
+                    'severity': 'high',
+                    'message': f"Respiratory depression detected: {resp} bpm",
+                    'patient_id': vitals_data['patient_id'],
+                    'timestamp': vitals_data['timestamp']
+                })
+
+        # Rule 8: Sepsis Pattern (Temp > 38.5 AND HR > 100 AND Resp > 20)
+        temp = vitals_data.get('temp_c')
+        hr = vitals_data.get('hr_bpm')
+        if temp and hr and resp:
+            if temp > 38.5 and hr > 100 and resp > 20:
+                alerts.append({
+                    'type': 'SEPSIS_RISK',
+                    'severity': 'critical',
+                    'message': f"Possible Sepsis Pattern: Temp {temp}C, HR {hr}, Resp {resp}",
+                    'patient_id': vitals_data['patient_id'],
+                    'timestamp': vitals_data['timestamp']
+                })
+
+        # Rule 9: Respiratory Distress (SpO2 < 92 AND Resp > 24)
+        spo2 = vitals_data.get('spo2_pct')
+        if spo2 and resp:
+            if spo2 < 92 and resp > 24:
+                alerts.append({
+                    'type': 'RESPIRATORY_DISTRESS',
+                    'severity': 'critical',
+                    'message': f"Respiratory Distress: SpO2 {spo2}%, Resp {resp}",
+                    'patient_id': vitals_data['patient_id'],
+                    'timestamp': vitals_data['timestamp']
+                })
+
         # Publish alerts to Kafka (Optional: Consumer does it too, but maybe API ingestion needs immediate publish?)
         # The prompt says "Also publish a JSON alert event to Kafka topic alerts."
         # If the consumer does it, we might duplicate if the API also calls this.

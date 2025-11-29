@@ -38,9 +38,17 @@ def get_observations():
     encounter_id = request.args.get('encounter_id')
     db = next(get_db())
     
+    current_user = request.current_user
+    
     query = db.query(Observation)
     if encounter_id:
         query = query.filter(Observation.encounter_id == encounter_id)
+        
+    # RBAC: Patient can only see observations for their own encounters
+    if current_user['role'] == 'patient':
+        from app.domain.models import Encounter, Patient
+        # Join with Encounter -> Patient to check ownership
+        query = query.join(Encounter).join(Patient).filter(Patient.user_id == current_user['user_id'])
         
     observations = query.all()
     return api_response(data=[ObservationResponse.model_validate(o).model_dump() for o in observations])

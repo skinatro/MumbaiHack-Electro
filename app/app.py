@@ -13,6 +13,7 @@ from app.api.llm_health import llm_health_bp
 import logging
 import time
 from werkzeug.exceptions import HTTPException
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.core.utils import api_response
 
 def create_app():
@@ -43,6 +44,16 @@ def create_app():
             
         logger.error(f"Unhandled exception: {e}", exc_info=True)
         return api_response(error="Internal Server Error", status_code=500)
+
+    @app.errorhandler(IntegrityError)
+    def handle_integrity_error(e):
+        logger.error(f"Integrity error: {e}")
+        return api_response(error="Database integrity error (duplicate entry or invalid reference)", status_code=409)
+
+    @app.errorhandler(SQLAlchemyError)
+    def handle_db_error(e):
+        logger.error(f"Database error: {e}", exc_info=True)
+        return api_response(error="Database error occurred", status_code=500)
     
     # Register Blueprints
     app.register_blueprint(auth_bp)

@@ -45,6 +45,14 @@ def get_encounter(id):
     if not encounter:
         return api_response(error='Encounter not found', status_code=404)
         
+    # RBAC: Patient can only see their own encounter
+    current_user = request.current_user
+    if current_user['role'] == 'patient':
+        # We need to check if this encounter belongs to the patient
+        # Assuming encounter.patient.user_id is available or we query it
+        if encounter.patient.user_id != current_user['user_id']:
+             return api_response(error="Unauthorized", status_code=403)
+
     return api_response(data=EncounterResponse.model_validate(encounter).model_dump())
 
 @encounters_bp.route('/<int:id>/overview', methods=['GET'])
